@@ -1,0 +1,31 @@
+{
+  "name": "standupper",
+  "version": "1.0.0",
+  "description": "Daily standup generator from GitLab, Jira, Slack, and Gmail activity",
+  "type": "module",
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "start": "node server.js",
+    "standup": "node index.js",
+    "gmail-setup": "node scripts/gmail-setup.js",
+    "gcal-setup": "node scripts/gcal-setup.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:gitlab": "node scripts/test-source.js gitlab",
+    "test:jira": "node scripts/test-source.js jira",
+    "test:slack": "node scripts/test-source.js slack",
+    "test:gmail": "node scripts/test-source.js gmail",
+    "test:gcal": "node scripts/test-source.js google-calendar"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@slack/bolt": "^4.6.0",
+    "dotenv": "^16.4.7",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^144.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

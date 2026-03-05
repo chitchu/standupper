@@ -1,0 +1,12 @@
+.env
+node_modules/
+standup.md
+client-secret.json
+.standup-cache.json
+package-lock.json
+coverage/
+standupper.db
+.playwright-mcp/
+.agents/
+.claude/
+skills-lock.json

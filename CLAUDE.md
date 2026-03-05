@@ -1,0 +1,1 @@
+* Always run the test after editing a file.
