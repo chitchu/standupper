@@ -19,6 +19,7 @@ const receiver = new ExpressReceiver({
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   receiver,
+  deferInitialization: true,
 })
 
 receiver.router.use(helmet())
@@ -276,6 +277,15 @@ receiver.router.get('/health', (_req, res) => res.json({ ok: true }))
 
 const port = parseInt(process.env.PORT ?? '3000', 10)
 ;(async () => {
-  await app.start(port)
-  console.log(`[standupper] Slack bot running on port ${port}`)
+  // Start HTTP server via receiver directly so /health is always reachable
+  await receiver.start(port)
+  console.log(`[standupper] HTTP server running on port ${port}`)
+
+  // Initialise and connect Slack bolt (requires SLACK_BOT_TOKEN)
+  try {
+    await app.init()
+    console.log('[standupper] Slack bot initialised')
+  } catch (e) {
+    console.error('[standupper] Slack init failed — check SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET:', e.message)
+  }
 })()
