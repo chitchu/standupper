@@ -62,10 +62,12 @@ export function saveOAuthState(slackUserId, service) {
   return state
 }
 
-export function consumeOAuthState(state) {
+export function consumeOAuthState(state, expectedService) {
   const row = db.prepare('SELECT * FROM oauth_states WHERE state = ?').get(state)
-  if (row) db.prepare('DELETE FROM oauth_states WHERE state = ?').run(state)
-  return row ?? null
+  if (!row) return null
+  db.prepare('DELETE FROM oauth_states WHERE state = ?').run(state)
+  if (expectedService && row.service !== expectedService) return null
+  return row
 }
 
 export function cleanupOldStates() {

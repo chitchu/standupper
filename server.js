@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import { App, ExpressReceiver } from '@slack/bolt'
 import { google } from 'googleapis'
+import helmet from 'helmet'
+import { rateLimit } from 'express-rate-limit'
 import { sources } from './src/sources/index.js'
 import { summarize } from './src/summarize.js'
 import { generateStandup } from './src/llm.js'
@@ -17,6 +19,13 @@ const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   receiver,
 })
+
+receiver.router.use(helmet())
+
+const slackLimiter = rateLimit({ windowMs: 60_000, max: 20, standardHeaders: true, legacyHeaders: false })
+const oauthLimiter = rateLimit({ windowMs: 60_000, max: 10, standardHeaders: true, legacyHeaders: false })
+receiver.router.use('/slack/events', slackLimiter)
+receiver.router.use('/auth', oauthLimiter)
 
 // ── OAuth helpers ────────────────────────────────────────────────────────────
 
@@ -107,7 +116,7 @@ app.command('/standup', async ({ command, ack, respond }) => {
       await respond({ response_type: 'in_channel', text: standupText })
     } catch (e) {
       console.error('[standupper] generate error:', e)
-      await respond({ response_type: 'ephemeral', text: `❌ Failed to generate standup: ${e.message}` })
+      await respond({ response_type: 'ephemeral', text: '❌ Failed to generate standup. Please try again later.' })
     }
     return
   }
@@ -157,7 +166,7 @@ app.command('/standup', async ({ command, ack, respond }) => {
 receiver.router.get('/auth/google/callback', async (req, res) => {
   const { code, state, error } = req.query
   if (error) return res.send(`<h2>❌ Google auth error: ${error}</h2>`)
-  const stateRow = consumeOAuthState(state)
+  const stateRow = consumeOAuthState(state, 'google')
   if (!stateRow) return res.send('<h2>❌ Invalid or expired state. Please try again from Slack.</h2>')
 
   try {
@@ -174,7 +183,7 @@ receiver.router.get('/auth/google/callback', async (req, res) => {
 receiver.router.get('/auth/gitlab/callback', async (req, res) => {
   const { code, state, error } = req.query
   if (error) return res.send(`<h2>❌ GitLab auth error: ${error}</h2>`)
-  const stateRow = consumeOAuthState(state)
+  const stateRow = consumeOAuthState(state, 'gitlab')
   if (!stateRow) return res.send('<h2>❌ Invalid or expired state. Please try again from Slack.</h2>')
 
   const base = process.env.GITLAB_URL ?? 'https://gitlab.com'
@@ -214,7 +223,7 @@ receiver.router.get('/auth/gitlab/callback', async (req, res) => {
 receiver.router.get('/auth/jira/callback', async (req, res) => {
   const { code, state, error } = req.query
   if (error) return res.send(`<h2>❌ Jira auth error: ${error}</h2>`)
-  const stateRow = consumeOAuthState(state)
+  const stateRow = consumeOAuthState(state, 'jira')
   if (!stateRow) return res.send('<h2>❌ Invalid or expired state. Please try again from Slack.</h2>')
 
   try {
