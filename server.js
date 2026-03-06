@@ -1,5 +1,6 @@
 import 'dotenv/config'
-import { App, ExpressReceiver } from '@slack/bolt'
+import boltPkg from '@slack/bolt'
+const { App, ExpressReceiver } = boltPkg
 import { google } from 'googleapis'
 import helmet from 'helmet'
 import { rateLimit } from 'express-rate-limit'

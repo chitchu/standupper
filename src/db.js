@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import crypto from 'crypto'
 
-const DB_PATH = process.env.SQLITE_DB_PATH ?? '/data/standupper.db'
+const DB_PATH = process.env.SQLITE_DB_PATH ?? 'standupper.db'
 
 const db = new DatabaseSync(DB_PATH)
 
