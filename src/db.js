@@ -1,10 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import crypto from 'crypto'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH = process.env.DATABASE_URL ?? path.join(__dirname, '..', 'standupper.db')
+const DB_PATH = process.env.SQLITE_DB_PATH ?? '/data/standupper.db'
 
 const db = new DatabaseSync(DB_PATH)
 
